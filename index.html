@@ -1,0 +1,240 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<meta name="theme-color" content="#050b18">
+<title>Vishnu AI JARVIS</title>
+<style>
+:root{--blue:#35c8ff;--cyan:#78e5ff;--bg:#050b18;--panel:#0b1930}
+*{box-sizing:border-box}
+body{margin:0;background:radial-gradient(circle at 50% 5%,#102c50 0,#050b18 52%,#02050c 100%);color:#eaf8ff;font-family:Arial,sans-serif;min-height:100vh}
+main{max-width:760px;margin:auto;padding:18px 14px 34px}
+header{text-align:center;padding:12px 0 18px}
+.logo{width:82px;height:82px;border:2px solid var(--blue);border-radius:50%;margin:auto;display:grid;place-items:center;box-shadow:0 0 24px #159bff88,inset 0 0 22px #159bff55;font-size:32px;color:var(--cyan)}
+h1{font-size:25px;letter-spacing:4px;margin:13px 0 5px;color:#c8f4ff}
+.sub{color:#8cb8ce;font-size:12px;letter-spacing:2px}
+.panel{background:linear-gradient(145deg,#10243d,#071326);border:1px solid #1d5575;border-radius:18px;padding:14px;margin:12px 0;box-shadow:0 8px 28px #0006}
+.status{display:flex;justify-content:space-between;gap:10px;align-items:center;font-size:13px;color:#a9d9ed}
+.dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#ffbf4b;margin-right:7px}
+#statusText{color:#ffd27c}
+.cameraWrap{position:relative;width:100%;aspect-ratio:4/3;background:#020712;border-radius:13px;overflow:hidden;margin-top:12px;border:1px solid #1c4e70}
+video,canvas{position:absolute;width:100%;height:100%;inset:0;object-fit:cover;transform:scaleX(-1)}
+canvas{pointer-events:none}
+#placeholder{position:absolute;inset:0;display:grid;place-items:center;text-align:center;color:#7da9c3;font-size:14px;padding:20px}
+.controls{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+button{border:1px solid #2789b8;background:linear-gradient(135deg,#12395b,#0a2039);color:#e8faff;border-radius:12px;padding:13px 10px;font-size:14px;font-weight:bold}
+button:active{transform:scale(.98);background:#145078}
+button.primary{background:linear-gradient(135deg,#087cb4,#075078);border-color:#54d7ff}
+button:disabled{opacity:.5}
+.readout{font-size:14px;line-height:1.5;color:#c4e8f5;min-height:24px}
+.big{font-size:19px;color:var(--cyan);font-weight:bold}
+.commands{display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:12px;color:#b4d7e8}
+.commands div{padding:9px;background:#071326;border-radius:9px;border:1px solid #153b59}
+input{width:100%;padding:13px;border-radius:11px;background:#061326;border:1px solid #286080;color:white;font-size:15px}
+.small{font-size:11px;line-height:1.5;color:#83a8bb}
+footer{text-align:center;color:#64869a;font-size:11px;padding:12px}
+</style>
+</head>
+<body>
+<main>
+<header>
+  <div class="logo">V</div>
+  <h1>VISHNU AI</h1>
+  <div class="sub">PERSONAL ASSISTANT • BASIC JARVIS</div>
+</header>
+
+<section class="panel">
+ <div class="status"><span><span class="dot" id="dot"></span><span id="statusText">SYSTEM STANDBY</span></span><span id="fps">CAMERA OFF</span></div>
+ <div class="cameraWrap">
+  <video id="video" autoplay playsinline muted></video>
+  <canvas id="overlay"></canvas>
+  <div id="placeholder">Camera preview will appear here<br>Tap START CAMERA to begin</div>
+ </div>
+ <div class="controls">
+  <button class="primary" id="startCam">START CAMERA</button>
+  <button id="stopCam">STOP CAMERA</button>
+  <button class="primary" id="listenBtn">🎙 START VOICE</button>
+  <button id="stopVoice">STOP VOICE</button>
+ </div>
+</section>
+
+<section class="panel">
+ <div class="sub">GESTURE DETECTED</div>
+ <p class="big" id="gesture">Waiting for hand…</p>
+ <div class="readout" id="action">Show one hand to the camera.</div>
+</section>
+
+<section class="panel">
+ <div class="sub">TALK TO VISHNU</div>
+ <p class="readout" id="reply">Namaste! I am Vishnu AI. Camera and voice features start only when you tap their buttons.</p>
+ <div class="controls">
+  <input id="typed" placeholder="Type a command…" aria-label="Type a command">
+  <button class="primary" id="send">SEND</button>
+ </div>
+</section>
+
+<section class="panel">
+ <div class="sub">BASIC GESTURE COMMANDS</div>
+ <div class="commands">
+  <div>☝️ Pointing up<br>Scroll page up</div>
+  <div>✌️ Victory sign<br>Scroll page down</div>
+  <div>👍 Thumb up<br>Vishnu greeting</div>
+  <div>✋ Open palm<br>Pause gesture actions</div>
+  <div>✊ Closed fist<br>Stop gesture actions</div>
+ </div>
+ <p class="small">Gestures act on this page only. Keep your hand steady for a moment. Open Palm and Closed Fist pause gesture-triggered actions.</p>
+</section>
+
+<section class="panel">
+ <div class="sub">VOICE COMMAND EXAMPLES</div>
+ <p class="readout">“Hello Vishnu” • “What time is it?” • “Scroll down” • “Scroll up” • “Open YouTube” • “Open Google” • “Stop”</p>
+ <p class="small">Voice recognition depends on browser and device support. The assistant can open public websites, but cannot freely operate other apps from a normal webpage.</p>
+</section>
+
+<footer>VISHNU AI • Camera processing runs in this browser tab</footer>
+</main>
+
+<script type="module">
+import { FilesetResolver, GestureRecognizer } from "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/vision_bundle.mjs";
+
+const $ = id => document.getElementById(id);
+const video = $("video"), canvas = $("overlay"), ctx = canvas.getContext("2d");
+let stream = null, recognizer = null, running = false, lastVideoTime = -1;
+let lastGesture = "", lastActionAt = 0, recognition = null;
+let voiceOn = false;
+
+function setStatus(text, active=false){
+  $("statusText").textContent = text;
+  $("dot").style.background = active ? "#45e6a0" : "#ffbf4b";
+}
+function speak(text){
+  $("reply").textContent = text;
+  if ("speechSynthesis" in window) {
+    window.speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = "en-IN"; u.rate = 1; u.pitch = 1;
+    window.speechSynthesis.speak(u);
+  }
+}
+function act(command){
+  const c = command.toLowerCase().trim();
+  if (!c) return;
+  if (c.includes("hello") || c.includes("namaste") || c.includes("hi vishnu")) {
+    speak("Namaste! Vishnu AI is ready. How can I help you?");
+  } else if (c.includes("time")) {
+    speak("The time is " + new Date().toLocaleTimeString("en-IN",{hour:"numeric",minute:"2-digit"}));
+  } else if (c.includes("scroll down")) {
+    window.scrollBy({top:Math.max(250,window.innerHeight*.65),behavior:"smooth"});
+    speak("Scrolling down.");
+  } else if (c.includes("scroll up")) {
+    window.scrollBy({top:-Math.max(250,window.innerHeight*.65),behavior:"smooth"});
+    speak("Scrolling up.");
+  } else if (c.includes("open youtube")) {
+    speak("Opening YouTube.");
+    window.open("https://m.youtube.com","_blank","noopener");
+  } else if (c.includes("open google")) {
+    speak("Opening Google.");
+    window.open("https://www.google.com","_blank","noopener");
+  } else if (c === "stop" || c.includes("stop listening")) {
+    stopVoice();
+    speak("Voice listening stopped.");
+  } else if (c.includes("help")) {
+    speak("You can ask me the time, say scroll up or down, or ask me to open YouTube or Google.");
+  } else {
+    speak("I heard: " + command + ". This basic version does not have an online AI brain yet.");
+  }
+}
+function drawHand(landmarks){
+  const w=canvas.width, h=canvas.height;
+  const edges=[[0,1],[1,2],[2,3],[3,4],[0,5],[5,6],[6,7],[7,8],[5,9],[9,10],[10,11],[11,12],[9,13],[13,14],[14,15],[15,16],[13,17],[17,18],[18,19],[19,20],[0,17]];
+  ctx.lineWidth=3; ctx.strokeStyle="#49d8ff"; ctx.fillStyle="#d8fbff";
+  for(const [a,b] of edges){ctx.beginPath();ctx.moveTo(landmarks[a].x*w,landmarks[a].y*h);ctx.lineTo(landmarks[b].x*w,landmarks[b].y*h);ctx.stroke();}
+  for(const p of landmarks){ctx.beginPath();ctx.arc(p.x*w,p.y*h,4,0,Math.PI*2);ctx.fill();}
+}
+function handleGesture(name){
+  $("gesture").textContent = name.replaceAll("_"," ") || "No gesture";
+  if(!name) return;
+  const now=Date.now();
+  if(name===lastGesture && now-lastActionAt<1400) return;
+  if(now-lastActionAt<1100) return;
+  lastGesture=name; lastActionAt=now;
+  if(name==="Pointing_Up"){act("scroll up");$("action").textContent="Gesture action: page scroll up";}
+  else if(name==="Victory"){act("scroll down");$("action").textContent="Gesture action: page scroll down";}
+  else if(name==="Thumb_Up"){speak("Great! Vishnu AI is ready.");$("action").textContent="Gesture action: greeting";}
+  else if(name==="Open_Palm"){$("action").textContent="Open palm detected. Gesture actions paused briefly.";lastGesture="";}
+  else if(name==="Closed_Fist"){$("action").textContent="Closed fist detected. Gesture actions paused briefly.";lastGesture="";}
+  else {$("action").textContent="Recognized: "+name.replaceAll("_"," ");}
+}
+async function startCamera(){
+  try{
+    if(!navigator.mediaDevices?.getUserMedia) throw new Error("Camera access needs a secure HTTPS page in a supported browser.");
+    setStatus("STARTING CAMERA…");
+    stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:{ideal:640},height:{ideal:480}},audio:false});
+    video.srcObject=stream; await video.play();
+    $("placeholder").style.display="none";
+    canvas.width=video.videoWidth;canvas.height=video.videoHeight;
+    setStatus("LOADING HAND TRACKER…");
+    const vision=await FilesetResolver.forVisionTasks("https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.14/wasm");
+    recognizer=await GestureRecognizer.createFromOptions(vision,{
+      baseOptions:{modelAssetPath:"https://storage.googleapis.com/mediapipe-models/gesture_recognizer/gesture_recognizer/float16/1/gesture_recognizer.task"},
+      runningMode:"VIDEO",numHands:1
+    });
+    running=true;setStatus("CAMERA + HAND TRACKING ON",true);loop();
+  }catch(e){
+    setStatus("CAMERA / TRACKER ERROR");
+    $("action").textContent=e.message||String(e);
+    if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  }
+}
+function loop(){
+  if(!running||!recognizer)return;
+  if(video.readyState>=2 && video.currentTime!==lastVideoTime){
+    lastVideoTime=video.currentTime;
+    const result=recognizer.recognizeForVideo(video,performance.now());
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    if(result.landmarks?.length){
+      drawHand(result.landmarks[0]);
+      const name=result.gestures?.[0]?.[0]?.categoryName||"Hand detected";
+      handleGesture(name);
+    }else{
+      $("gesture").textContent="No hand detected";
+      lastGesture="";
+    }
+  }
+  requestAnimationFrame(loop);
+}
+function stopCamera(){
+  running=false;
+  if(stream){stream.getTracks().forEach(t=>t.stop());stream=null;}
+  video.srcObject=null;ctx.clearRect(0,0,canvas.width,canvas.height);
+  $("placeholder").style.display="grid";
+  $("fps").textContent="CAMERA OFF";
+  $("gesture").textContent="Camera stopped";
+  setStatus("SYSTEM STANDBY");
+}
+function startVoice(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){speak("Speech recognition is not supported in this browser. You can type commands instead.");return;}
+  if(recognition){try{recognition.stop()}catch(e){}}
+  recognition=new SR();recognition.lang="en-IN";recognition.continuous=true;recognition.interimResults=false;
+  recognition.onstart=()=>{voiceOn=true;setStatus("VOICE LISTENING",true);};
+  recognition.onresult=e=>{
+    const text=e.results[e.results.length-1][0].transcript;
+    $("action").textContent="Heard: "+text;act(text);
+  };
+  recognition.onerror=e=>{$("action").textContent="Voice error: "+e.error;};
+  recognition.onend=()=>{voiceOn=false;if(running)setStatus("CAMERA + HAND TRACKING ON",true);else setStatus("SYSTEM STANDBY");};
+  try{recognition.start();}catch(e){speak("Could not start voice recognition. Please try again.");}
+}
+function stopVoice(){voiceOn=false;if(recognition){try{recognition.stop()}catch(e){}}}
+$("startCam").addEventListener("click",startCamera);
+$("stopCam").addEventListener("click",stopCamera);
+$("listenBtn").addEventListener("click",startVoice);
+$("stopVoice").addEventListener("click",()=>{stopVoice();speak("Voice stopped.");});
+$("send").addEventListener("click",()=>{const v=$("typed").value;act(v);$("typed").value="";});
+$("typed").addEventListener("keydown",e=>{if(e.key==="Enter")$("send").click();});
+window.addEventListener("pagehide",()=>{stopCamera();stopVoice();});
+</script>
+</body>
+</html>
